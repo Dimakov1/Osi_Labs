@@ -7,8 +7,7 @@ set(CMAKE_C_STANDARD 11)
 add_executable(lab1
     main.c
     src/parent.c
-    src/child1.c
-    src/child2.c
+    src/child.c
     src/utils.c)
 
 target_include_directories(lab1 PRIVATE include)

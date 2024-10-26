@@ -1,6 +1,5 @@
 #include "parent.h"
-#include "child1.h"
-#include "child2.h"
+#include "child.h"
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,9 +13,9 @@ char* ParentRoutine(const char* inputString) {
     int pipe3[2]; 
     static char buffer[BUFFER_SIZE]; 
 
-    CreatePipe(pipe1);
-    CreatePipe(pipe2);
-    CreatePipe(pipe3);
+    Create_pipe(pipe1);
+    Create_pipe(pipe2);
+    Create_pipe(pipe3);
 
     pid_t child1 = fork();
     if (child1 == -1) {
@@ -25,7 +24,7 @@ char* ParentRoutine(const char* inputString) {
     }
 
     if (child1 == 0) { 
-        Child1Routine(pipe1, pipe3);
+        ChildRoutine(pipe1, pipe3, To_lower_case);
         exit(0);
     }
 
@@ -36,7 +35,7 @@ char* ParentRoutine(const char* inputString) {
     }
 
     if (child2 == 0) { 
-        Child2Routine(pipe3, pipe2);
+        ChildRoutine(pipe3, pipe2, Replace_spaces);
         exit(0);
     }
 

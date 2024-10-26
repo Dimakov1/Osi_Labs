@@ -20,8 +20,7 @@ target_link_libraries(GTest::GTest INTERFACE gtest_main)
 add_executable(lab1_test
     lab1_test.cpp           
     ../lab1/src/parent.c      
-    ../lab1/src/child1.c        
-    ../lab1/src/child2.c      
+    ../lab1/src/child.c          
     ../lab1/src/utils.c       
 )
 

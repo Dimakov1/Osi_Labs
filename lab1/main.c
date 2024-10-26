@@ -13,7 +13,7 @@ int main(void) {
     }
     buffer[strcspn(buffer, "\n")] = '\0'; 
 
-    char* result = ParentRoutine(buffer);
+    const char* result = ParentRoutine(buffer);
 
     printf("Результат     : %s\n", result);
 
