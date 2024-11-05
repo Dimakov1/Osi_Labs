@@ -1,33 +1,24 @@
-#include <iostream>
-#include <vector>
-#include <cmath>
+#include "KMeans.h"
+#include "Utils.h"
+#include <pthread.h>
 #include <cstdlib>
 #include <ctime>
-#include <pthread.h>
-#include <unistd.h>
-#include <chrono>
+#include <iostream>
+#include <vector>
 
-struct Point {
-    double x, y;
-    int cluster = -1;
-};
-
-struct ThreadData {
-    std::vector<Point>* points;
-    std::vector<Point>* centroids;
-    int start;
-    int end;
-    int k;
-};
-
-pthread_mutex_t mutex;
-
-double distance(const Point &a, const Point &b) {
-    return std::sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+KMeans::KMeans(int k, int maxThreads) : k(k), maxThreads(maxThreads) {
+    centroids.resize(k);
+    std::srand(static_cast<unsigned int>(std::time(0)));
 }
 
-void* assignClusters(void* arg) {
-    ThreadData* data = (ThreadData*)arg;
+void KMeans::initializeCentroids(std::vector<Point>& points) {
+    for(int i = 0; i < k; ++i){
+        centroids[i] = points[std::rand() % points.size()];
+    }
+}
+
+void* KMeans::assignClusters(void* arg) {
+    ThreadData* data = static_cast<ThreadData*>(arg);
     for (int i = data->start; i < data->end; ++i) {
         double minDist = distance((*data->points)[i], (*data->centroids)[0]);
         int bestCluster = 0;
@@ -43,13 +34,8 @@ void* assignClusters(void* arg) {
     return nullptr;
 }
 
-void kMeansClustering(std::vector<Point>& points, int k, int maxThreads) {
-    std::vector<Point> centroids(k);
-    std::srand(std::time(0));
-
-    for (int i = 0; i < k; ++i) {
-        centroids[i] = points[std::rand() % points.size()];
-    }
+void KMeans::run(std::vector<Point>& points) {
+    initializeCentroids(points);
 
     bool changed;
     int iterations = 0;
@@ -59,8 +45,8 @@ void kMeansClustering(std::vector<Point>& points, int k, int maxThreads) {
         changed = false;
 
         int pointsPerThread = points.size() / maxThreads;
-        pthread_t threads[maxThreads];
-        ThreadData threadData[maxThreads];
+        std::vector<pthread_t> threads(maxThreads);
+        std::vector<ThreadData> threadData(maxThreads);
 
         for (int i = 0; i < maxThreads; ++i) {
             int start = i * pointsPerThread;
@@ -70,7 +56,7 @@ void kMeansClustering(std::vector<Point>& points, int k, int maxThreads) {
             } else {
                 end = (i + 1) * pointsPerThread;
             }
-            
+
             threadData[i] = { &points, &centroids, start, end, k };
 
             if (pthread_create(&threads[i], nullptr, assignClusters, &threadData[i]) != 0) {
@@ -94,7 +80,8 @@ void kMeansClustering(std::vector<Point>& points, int k, int maxThreads) {
 
         for (int i = 0; i < k; ++i) {
             if (count[i] > 0) {
-                Point newCentroid = { sumX[i] / count[i], sumY[i] / count[i] };
+                Point newCentroid(sumX[i] / count[i], sumY[i] / count[i]);
+
                 if (centroids[i].x != newCentroid.x || centroids[i].y != newCentroid.y) {
                     changed = true;
                 }
@@ -105,7 +92,9 @@ void kMeansClustering(std::vector<Point>& points, int k, int maxThreads) {
         iterations++;
 
     } while (changed && iterations < maxIterations);
+}
 
+void KMeans::printResults(const std::vector<Point>& points) {
     for (int i = 0; i < k; ++i) {
         std::cout << "Кластер " << i + 1 << " центр: (" << centroids[i].x << ", " << centroids[i].y << ")\n";
     }
@@ -115,49 +104,4 @@ void kMeansClustering(std::vector<Point>& points, int k, int maxThreads) {
     }
 
     //std::cout << iterations << '\n';
-
-}
-
-class Timer{
-public:
-    Timer(){
-        
-        start = std::chrono::high_resolution_clock::now();
-        }
-    ~Timer(){
-        end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> time = end - start;
-        std::cout << "time\t" << time.count() << " s\n"; 
-
-    }
-private:
-    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
-};
-
-
-
-int main() {
-    int maxThreads;
-
-    std::cout << "Введите максимальное количество потоков:\n";
-    std::cin >> maxThreads;
-
-    int n, k;
-    std::cout << "Введите количество точек:\n";
-    std::cin >> n;
-
-    std::vector<Point> points(n);
-    std::cout << "Введите координаты точек (x y):\n";
-    for (int i = 0; i < n; ++i) {
-        std::cin >> points[i].x >> points[i].y;
-    }
-
-    std::cout << "Введите количество кластеров:\n";
-    std::cin >> k;
-    Timer t;
-    kMeansClustering(points, k, maxThreads);
-
-    std::cout << "Используемое количество потоков: " << maxThreads << std::endl;
-
-    return 0;
 }
