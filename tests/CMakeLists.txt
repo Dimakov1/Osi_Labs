@@ -31,3 +31,23 @@ target_include_directories(lab1_test PRIVATE
 target_link_libraries(lab1_test PRIVATE GTest::GTest)
 
 add_test(NAME lab1_test COMMAND lab1_test)
+
+add_executable(lab2_test
+    lab2_test.cpp
+)
+
+target_include_directories(lab2_test PRIVATE
+    ../lab2/include
+)
+
+target_link_libraries(lab2_test PRIVATE GTest::GTest pthread)
+
+add_test(
+    NAME lab2_single_thread
+    COMMAND lab2_test --gtest_filter=Lab2Test.SingleThreadedRun
+)
+
+add_test(
+    NAME lab2_multi_thread
+    COMMAND lab2_test --gtest_filter=Lab2Test.MultiThreadedRun
+)

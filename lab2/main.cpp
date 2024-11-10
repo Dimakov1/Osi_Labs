@@ -26,7 +26,7 @@ int main() {
     Timer t;
     KMeans kmeans(k, maxThreads);
     kmeans.run(points);
-    kmeans.printResults(points);
+    //kmeans.printResults(points);
 
     std::cout << "Используемое количество потоков: " << maxThreads << std::endl;
 
