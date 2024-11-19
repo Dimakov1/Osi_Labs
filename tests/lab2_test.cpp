@@ -1,26 +1,81 @@
 #include <gtest/gtest.h>
-#include <cstdlib>
+#include <vector>
+#include <fstream>
+#include <sstream>
+#include <chrono>
+#include "KMeans.h"
+#include "Point.h"
 
-int run_program(const std::string& input_file) {
-    std::string command = "./lab2/lab2 < " + input_file;
-    #ifdef _WIN32
-    #endif
-    return system(command.c_str());
+std::vector<Point> loadPoints(const std::string& filename) {
+    std::vector<Point> points;
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Не удалось открыть файл: " + filename);
+    }
+
+    int n;
+    file >> n;
+    for (int i = 0; i < n; ++i) {
+        double x, y;
+        file >> x >> y;
+        points.emplace_back(x, y);
+    }
+
+    return points;
 }
 
 TEST(Lab2Test, SingleThreadedRun) {
-    int ret = run_program("../tests/files_for_lab2/input_single.txt");
-    EXPECT_EQ(ret, 0) << "Однопоточный запуск завершился с ошибкой.";
+    std::vector<Point> points = loadPoints("../tests/files_for_lab2/input_single.txt");
+
+    int k = 2;
+    int maxThreads = 1;
+
+    KMeans kmeans(k, maxThreads);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    kmeans.run(points);
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> duration = end - start;
+    std::cout << "Время выполнения (однопоточный режим): " << duration.count() << " секунд\n";
+
+    for (const auto& point : points) {
+        EXPECT_GE(point.cluster, 0) << "Точка не имеет назначенного кластера";
+    }
 }
 
 TEST(Lab2Test, MultiThreadedRun) {
-    int ret = run_program("../tests/files_for_lab2/1_flow.txt");
-    EXPECT_EQ(ret, 0) << "Многопоточный запуск завершился с ошибкой.";
-}
+    std::vector<Point> points = loadPoints("../tests/files_for_lab2/speed.txt");
 
-TEST(Lab2Test, MultiThreadedRun2) {
-    int ret = run_program("../tests/files_for_lab2/4_flow.txt");
-    EXPECT_EQ(ret, 0) << "Многопоточный запуск завершился с ошибкой.";
+    int k = 3; 
+
+    int maxThreadsSingle = 1;
+    KMeans kmeansSingle(k, maxThreadsSingle);
+
+    auto startSingle = std::chrono::high_resolution_clock::now();
+    kmeansSingle.run(points);
+    auto endSingle = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> durationSingle = endSingle - startSingle;
+    std::cout << "Время выполнения (однопоточный режим): " << durationSingle.count() << " секунд\n";
+
+    int maxThreadsMulti = 4;
+    KMeans kmeansMulti(k, maxThreadsMulti);
+
+    points = loadPoints("../tests/files_for_lab2/speed.txt");
+
+    auto startMulti = std::chrono::high_resolution_clock::now();
+    kmeansMulti.run(points);
+    auto endMulti = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> durationMulti = endMulti - startMulti;
+    std::cout << "Время выполнения (четырехпоточный режим): " << durationMulti.count() << " секунд\n";
+
+    EXPECT_LT(durationMulti.count(), durationSingle.count()) << "Многопоточный режим работает медленнее однопоточного";
+
+    for (const auto& point : points) {
+        EXPECT_GE(point.cluster, 0) << "Точка не имеет назначенного кластера";
+    }
 }
 
 int main(int argc, char **argv) {

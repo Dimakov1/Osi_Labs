@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(lab1_test_project)
+project(OSI_LABS_Tests)
 
 enable_testing()
 
@@ -34,13 +34,18 @@ add_test(NAME lab1_test COMMAND lab1_test)
 
 add_executable(lab2_test
     lab2_test.cpp
+    ../lab2/src/KMeans.cpp
+    ../lab2/src/Utils.cpp
+    ../lab2/src/Timer.cpp
 )
 
 target_include_directories(lab2_test PRIVATE
     ../lab2/include
 )
 
-target_link_libraries(lab2_test PRIVATE GTest::GTest pthread)
+find_package(Threads REQUIRED)
+
+target_link_libraries(lab2_test PRIVATE GTest::GTest Threads::Threads)
 
 add_test(
     NAME lab2_single_thread

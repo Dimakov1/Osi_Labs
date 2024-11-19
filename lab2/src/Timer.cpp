@@ -5,7 +5,6 @@ Timer::Timer(){
 }
 
 Timer::~Timer(){
-    end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float> time = end - start;
+    std::chrono::duration<float> time = std::chrono::high_resolution_clock::now() - start;
     std::cout << "Время выполнения: " << time.count() << " секунд\n"; 
 }
