@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <cstring> 
-#include "../include/parent.h"
+#include "../lab1/include/parent.h"
 
 TEST(test_01, basic_test_set) {
     const char* result = ParentRoutine("Hello World");
