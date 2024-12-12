@@ -56,3 +56,18 @@ add_test(
     NAME lab2_multi_thread
     COMMAND lab2_test --gtest_filter=Lab2Test.MultiThreadedRun
 )
+
+add_executable(lab3_test
+    lab3_test.cpp
+    ../lab3/src/error_handling.c
+    ../lab3/src/memory_map.c
+    ../lab3/src/processes.c
+)
+
+target_include_directories(lab3_test PRIVATE
+    ../lab3/include
+)
+
+target_link_libraries(lab3_test PRIVATE GTest::GTest)
+
+add_test(NAME lab3_test COMMAND lab3_test)
