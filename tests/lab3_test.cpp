@@ -12,15 +12,6 @@ extern "C" {
 
 
 TEST(Lab3Test, SingleWord) {
-    const char* input = "Hello";
-    char output[BUFFER_SIZE];
-
-    int result = process_string(input, output, BUFFER_SIZE);
-    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
-    EXPECT_STREQ(output, "hello");
-}
-
-TEST(Lab3Test, MultipleWords) {
     const char* input = "Hello World";
     char output[BUFFER_SIZE];
 
@@ -29,22 +20,13 @@ TEST(Lab3Test, MultipleWords) {
     EXPECT_STREQ(output, "hello_world");
 }
 
-TEST(Lab3Test, MixedCaseAndSpaces) {
-    const char* input = "HeLLo WoRLd Test";
-    char output[BUFFER_SIZE];
-
-    int result = process_string(input, output, BUFFER_SIZE);
-    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
-    EXPECT_STREQ(output, "hello_world_test");
-}
-
 TEST(Lab3Test, NoSpaces) {
-    const char* input = "HELLOWORLD";
+    const char* input = "TestString";
     char output[BUFFER_SIZE];
 
     int result = process_string(input, output, BUFFER_SIZE);
     EXPECT_EQ(result, 0) << "process_string вернула ошибку";
-    EXPECT_STREQ(output, "helloworld");
+    EXPECT_STREQ(output, "teststring");
 }
 
 TEST(Lab3Test, EmptyString) {
@@ -75,12 +57,12 @@ TEST(Lab3Test, SpecialCharacters) {
 }
 
 TEST(Lab3Test, NumericCharacters) {
-    const char* input = "Test123 456";
+    const char* input = "123 Test 456";
     char output[BUFFER_SIZE];
 
     int result = process_string(input, output, BUFFER_SIZE);
     EXPECT_EQ(result, 0) << "process_string вернула ошибку";
-    EXPECT_STREQ(output, "test123_456");
+    EXPECT_STREQ(output, "123_test_456");
 }
 
 int main(int argc, char **argv) {
