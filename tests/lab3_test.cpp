@@ -1,133 +1,86 @@
 #include <gtest/gtest.h>
-#include <sys/mman.h>
 #include <cstring>
-#include <unistd.h>
-#include <sys/wait.h> 
+#include <string>
 
 extern "C" {
+    #include "error_handling.h"
     #include "memory_map.h"
     #include "processes.h"
-    #include "error_handling.h"
 }
 
-TEST(test_01, basic_test_set) {
+#define BUFFER_SIZE 1024
+
+
+TEST(Lab3Test, SingleWord) {
+    const char* input = "Hello";
+    char output[BUFFER_SIZE];
+
+    int result = process_string(input, output, BUFFER_SIZE);
+    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
+    EXPECT_STREQ(output, "hello");
+}
+
+TEST(Lab3Test, MultipleWords) {
     const char* input = "Hello World";
-    const char* expected = "hello_world";
+    char output[BUFFER_SIZE];
 
-    size_t size = 1024;
-    char* mem = static_cast<char*>(create_shared_memory(size));
-    ASSERT_NE(mem, MAP_FAILED) << "Не удалось создать разделяемую память";
-    ASSERT_NE(mem, nullptr) << "Разделяемая память равна nullptr";
-
-    strcpy(mem, input);
-
-    pid_t pid1 = fork();
-    ASSERT_GE(pid1, 0) << "Не удалось создать процесс для child1";
-    if (pid1 == 0) {
-        child1(mem);
-        _exit(EXIT_FAILURE);
-    }
-
-    int status1;
-    waitpid(pid1, &status1, 0);
-    ASSERT_TRUE(WIFEXITED(status1)) << "Child1 не завершился корректно";
-    ASSERT_EQ(WEXITSTATUS(status1), EXIT_SUCCESS) << "Child1 завершился с ошибкой";
-    EXPECT_STREQ(mem, "hello world");
-
-    pid_t pid2 = fork();
-    ASSERT_GE(pid2, 0) << "Не удалось создать процесс для child2";
-    if (pid2 == 0) {
-        child2(mem);
-        _exit(EXIT_FAILURE);
-    }
-
-    int status2;
-    waitpid(pid2, &status2, 0);
-    ASSERT_TRUE(WIFEXITED(status2)) << "Child2 не завершился корректно";
-    ASSERT_EQ(WEXITSTATUS(status2), EXIT_SUCCESS) << "Child2 завершился с ошибкой";
-    EXPECT_STREQ(mem, expected);
-
-    release_shared_memory(mem, size);
+    int result = process_string(input, output, BUFFER_SIZE);
+    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
+    EXPECT_STREQ(output, "hello_world");
 }
 
-TEST(test_02, basic_test_set) {
-    const char* input = "TestString";
-    const char* expected = "teststring";
+TEST(Lab3Test, MixedCaseAndSpaces) {
+    const char* input = "HeLLo WoRLd Test";
+    char output[BUFFER_SIZE];
 
-    size_t size = 1024;
-    char* mem = static_cast<char*>(create_shared_memory(size));
-    ASSERT_NE(mem, MAP_FAILED) << "Не удалось создать разделяемую память";
-    ASSERT_NE(mem, nullptr) << "Разделяемая память равна nullptr";
-
-    strcpy(mem, input);
-
-    pid_t pid1 = fork();
-    ASSERT_GE(pid1, 0) << "Не удалось создать процесс для child1";
-    if (pid1 == 0) {
-        child1(mem);
-        _exit(EXIT_FAILURE);
-    }
-
-    int status1;
-    waitpid(pid1, &status1, 0);
-    ASSERT_TRUE(WIFEXITED(status1)) << "Child1 не завершился корректно";
-    ASSERT_EQ(WEXITSTATUS(status1), EXIT_SUCCESS) << "Child1 завершился с ошибкой";
-    EXPECT_STREQ(mem, "teststring");
-
-    pid_t pid2 = fork();
-    ASSERT_GE(pid2, 0) << "Не удалось создать процесс для child2";
-    if (pid2 == 0) {
-        child2(mem);
-        _exit(EXIT_FAILURE);
-    }
-
-    int status2;
-    waitpid(pid2, &status2, 0);
-    ASSERT_TRUE(WIFEXITED(status2)) << "Child2 не завершился корректно";
-    ASSERT_EQ(WEXITSTATUS(status2), EXIT_SUCCESS) << "Child2 завершился с ошибкой";
-    EXPECT_STREQ(mem, expected);
-
-    release_shared_memory(mem, size);
+    int result = process_string(input, output, BUFFER_SIZE);
+    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
+    EXPECT_STREQ(output, "hello_world_test");
 }
 
-TEST(test_03, basic_test_set) {
-    const char* input = "123 Test 456";
-    const char* expected = "123_test_456";
+TEST(Lab3Test, NoSpaces) {
+    const char* input = "HELLOWORLD";
+    char output[BUFFER_SIZE];
 
-    size_t size = 1024;
-    char* mem = static_cast<char*>(create_shared_memory(size));
-    ASSERT_NE(mem, MAP_FAILED) << "Не удалось создать разделяемую память";
-    ASSERT_NE(mem, nullptr) << "Разделяемая память равна nullptr";
+    int result = process_string(input, output, BUFFER_SIZE);
+    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
+    EXPECT_STREQ(output, "helloworld");
+}
 
-    strcpy(mem, input);
+TEST(Lab3Test, EmptyString) {
+    const char* input = "";
+    char output[BUFFER_SIZE];
 
-    pid_t pid1 = fork();
-    ASSERT_GE(pid1, 0) << "Не удалось создать процесс для child1";
-    if (pid1 == 0) {
-        child1(mem);
-        _exit(EXIT_FAILURE);
-    }
+    int result = process_string(input, output, BUFFER_SIZE);
+    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
+    EXPECT_STREQ(output, "");
+}
 
-    int status1;
-    waitpid(pid1, &status1, 0);
-    ASSERT_TRUE(WIFEXITED(status1)) << "Child1 не завершился корректно";
-    ASSERT_EQ(WEXITSTATUS(status1), EXIT_SUCCESS) << "Child1 завершился с ошибкой";
-    EXPECT_STREQ(mem, "123 test 456");
+TEST(Lab3Test, LeadingAndTrailingSpaces) {
+    const char* input = "  Hello World  ";
+    char output[BUFFER_SIZE];
 
-    pid_t pid2 = fork();
-    ASSERT_GE(pid2, 0) << "Не удалось создать процесс для child2";
-    if (pid2 == 0) {
-        child2(mem);
-        _exit(EXIT_FAILURE);
-    }
+    int result = process_string(input, output, BUFFER_SIZE);
+    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
+    EXPECT_STREQ(output, "__hello_world__");
+}
 
-    int status2;
-    waitpid(pid2, &status2, 0);
-    ASSERT_TRUE(WIFEXITED(status2)) << "Child2 не завершился корректно";
-    ASSERT_EQ(WEXITSTATUS(status2), EXIT_SUCCESS) << "Child2 завершился с ошибкой";
-    EXPECT_STREQ(mem, expected);
+TEST(Lab3Test, SpecialCharacters) {
+    const char* input = "Hello, World!";
+    char output[BUFFER_SIZE];
 
-    release_shared_memory(mem, size);
+    int result = process_string(input, output, BUFFER_SIZE);
+    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
+    EXPECT_STREQ(output, "hello,_world!");
+}
+
+TEST(Lab3Test, NumericCharacters) {
+    const char* input = "Test123 456";
+    char output[BUFFER_SIZE];
+
+    int result = process_string(input, output, BUFFER_SIZE);
+    EXPECT_EQ(result, 0) << "process_string вернула ошибку";
+    EXPECT_STREQ(output, "test123_456");
 }
 
 int main(int argc, char **argv) {

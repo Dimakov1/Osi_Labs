@@ -12,21 +12,6 @@ bool is_sorted_correctly(const int* sorted, const int* expected, int size) {
     return true;
 }
 
-double measure_sort_time(void (*sort_func)(int*, int), int* array, int size, int iterations) {
-    struct timespec start, end;
-    clock_gettime(CLOCK_MONOTONIC, &start);
-    for(int i = 0; i < iterations; ++i) {
-        int* temp_array = new int[size];
-        memcpy(temp_array, array, size * sizeof(int));
-        sort_func(temp_array, size);
-        delete[] temp_array;
-    }
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    double total_time = (end.tv_sec - start.tv_sec) * 1e3 + 
-                        (end.tv_nsec - start.tv_nsec) / 1e6;
-    return total_time / iterations;
-}
-
 TEST(SortTest, BubbleSort) {
     set_sort_function(Sort_Bubble);
     
