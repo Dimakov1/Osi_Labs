@@ -12,6 +12,7 @@ FetchContent_Declare(
     GIT_TAG        release-1.11.0
 )
 
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 add_library(GTest::GTest INTERFACE IMPORTED)
@@ -56,3 +57,48 @@ add_test(
     NAME lab2_multi_thread
     COMMAND lab2_test --gtest_filter=Lab2Test.MultiThreadedRun
 )
+
+add_executable(lab3_test
+    lab3_test.cpp
+    ../lab3/src/error_handling.c
+    ../lab3/src/memory_map.c
+    ../lab3/src/processes.c
+)
+
+target_include_directories(lab3_test PRIVATE
+    ../lab3/include
+)
+
+target_link_libraries(lab3_test PRIVATE GTest::GTest)
+
+add_test(NAME lab3_test COMMAND lab3_test)
+
+add_executable(lab4_gcf_test
+    gcf_test.cpp
+    ../lab4/src/gcf_euclidean.c
+    ../lab4/src/gcf_naive.c
+    ../lab4/src/gcf_wrapper.c
+)
+
+target_include_directories(lab4_gcf_test PRIVATE
+    ../lab4/include
+)
+
+target_link_libraries(lab4_gcf_test PRIVATE GTest::GTest)
+
+add_test(NAME lab4_gcf_test COMMAND lab4_gcf_test)
+
+add_executable(lab4_sort_test
+    sort_test.cpp
+    ../lab4/src/sort_bubble.c
+    ../lab4/src/sort_quick.c
+    ../lab4/src/sort_wrapper.c
+)
+
+target_include_directories(lab4_sort_test PRIVATE
+    ../lab4/include
+)
+
+target_link_libraries(lab4_sort_test PRIVATE GTest::GTest)
+
+add_test(NAME lab4_sort_test COMMAND lab4_sort_test)
